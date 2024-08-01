@@ -69,17 +69,16 @@ class _QRViewExampleState extends State<QRViewExample> {
             await controller.pauseCamera();
             final data = jsonDecode(scanData.code.toString());
             final dio = Dio(BaseOptions(
-                baseUrl: 'https://swc.iitg.ac.in/test/khokhaEntry/api',
+                baseUrl: 'https://swc.iitg.ac.in/test/khokhaEntry/api/v1',
                 headers: {'khokha-security-key': 'KhOkHa-DeV'}));
             Map reqBody = {};
             if (data['isExit']) {
               reqBody = {
                 'outlookEmail': data['outlookEmail'],
                 'name': data['name'],
+                'checkOutGate': 'FACULTY GATE',
                 'rollNumber': data['rollNumber'],
                 'hostel': data['hostel'],
-                'program': data['program'],
-                'branch': data['branch'],
                 'phoneNumber': data['phoneNumber'],
                 'roomNumber': data['roomNumber'],
                 'destination': data['destination'],
