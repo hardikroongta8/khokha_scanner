@@ -73,21 +73,27 @@ class _QRViewExampleState extends State<QRViewExample> {
                 headers: {'khokha-security-key': 'KhOkHa-DeV'}));
             Map reqBody = {};
             if (data['isExit']) {
+              // reqBody = {
+              //   'outlookEmail': data['outlookEmail'],
+              //   'name': data['name'],
+              //   'checkOutGate': 'FACULTY GATE',
+              //   'rollNumber': data['rollNumber'],
+              //   'hostel': data['hostel'],
+              //   'phoneNumber': data['phoneNumber'],
+              //   'roomNumber': data['roomNumber'],
+              //   'destination': data['destination'],
+              //   'connectionId': data['connectionId']
+              // };
               reqBody = {
-                'outlookEmail': data['outlookEmail'],
-                'name': data['name'],
-                'checkOutGate': 'FACULTY GATE',
-                'rollNumber': data['rollNumber'],
-                'hostel': data['hostel'],
-                'phoneNumber': data['phoneNumber'],
-                'roomNumber': data['roomNumber'],
+                'userId': data['userId'],
+                'connectionId': data['connectionId'],
                 'destination': data['destination'],
-                'connectionId': data['connectionId']
+                'checkOutGate': 'FACULTY GATE',
               };
             } else {
               reqBody = {
                 'connectionId': data['connectionId'],
-                'entryId': data['entryId']
+                'entryId': data['entryId'],
               };
             }
             try {
@@ -95,18 +101,16 @@ class _QRViewExampleState extends State<QRViewExample> {
               if (data['isExit']) {
                 res = await dio.post('/newEntry', data: reqBody);
               } else {
-                res = await dio.patch('/closeEntry/${reqBody['entryId']}',
-                    data: reqBody);
+                res = await dio.patch('/closeEntry/${reqBody['entryId']}', data: reqBody);
               }
 
-              ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text(res.data['message'].toString())));
+              ScaffoldMessenger.of(context)
+                  .showSnackBar(SnackBar(content: Text(res.data['message'].toString())));
 
               print(res.data);
             } catch (e) {
-              ScaffoldMessenger.of(context).showSnackBar(SnackBar(
-                  content: Text(e.toString()),
-                  duration: const Duration(seconds: 20)));
+              ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text(e.toString()), duration: const Duration(seconds: 20)));
             }
           });
         },
