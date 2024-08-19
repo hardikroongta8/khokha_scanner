@@ -5,7 +5,8 @@ import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:qr_code_scanner/qr_code_scanner.dart';
 
-void main() => runApp(const MaterialApp(home: MyHome()));
+void main() => runApp(
+    const MaterialApp(debugShowCheckedModeBanner: false, home: MyHome()));
 
 class MyHome extends StatefulWidget {
   const MyHome({super.key});
@@ -18,25 +19,38 @@ class _MyHomeState extends State<MyHome> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Flutter Demo Home Page')),
       body: Center(
-        child: ElevatedButton(
-          onPressed: () {
-            Navigator.of(context).push(
-              MaterialPageRoute(
-                builder: (context) => const QRViewExample(),
-              ),
-            );
-          },
-          child: const Text('qrView'),
-        ),
+        child: Column(mainAxisAlignment: MainAxisAlignment.center, children: [
+          ElevatedButton(
+            onPressed: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (context) => const QRViewExample(isProd: true),
+                ),
+              );
+            },
+            child: const Text('Scan QR - PROD'),
+          ),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (context) => const QRViewExample(isProd: false),
+                ),
+              );
+            },
+            child: const Text('Scan QR - DEV'),
+          ),
+        ]),
       ),
     );
   }
 }
 
 class QRViewExample extends StatefulWidget {
-  const QRViewExample({super.key});
+  final bool isProd;
+
+  const QRViewExample({required this.isProd, super.key});
 
   @override
   State<StatefulWidget> createState() => _QRViewExampleState();
@@ -69,48 +83,44 @@ class _QRViewExampleState extends State<QRViewExample> {
             await controller.pauseCamera();
             final data = jsonDecode(scanData.code.toString());
             final dio = Dio(BaseOptions(
-                baseUrl: 'https://swc.iitg.ac.in/test/khokhaEntry/api/v1',
-                headers: {'khokha-security-key': 'KhOkHa-DeV'}));
+                baseUrl:
+                    'https://swc.iitg.ac.in${widget.isProd ? '' : '/test'}/khokhaEntry/api/v1',
+                headers: {
+                  'khokha-security-key': String.fromEnvironment(
+                      widget.isProd ? 'PROD_SECURITY_KEY' : 'DEV_SECURITY_KEY')
+                }));
             Map reqBody = {};
             if (data['isExit']) {
-              // reqBody = {
-              //   'outlookEmail': data['outlookEmail'],
-              //   'name': data['name'],
-              //   'checkOutGate': 'FACULTY GATE',
-              //   'rollNumber': data['rollNumber'],
-              //   'hostel': data['hostel'],
-              //   'phoneNumber': data['phoneNumber'],
-              //   'roomNumber': data['roomNumber'],
-              //   'destination': data['destination'],
-              //   'connectionId': data['connectionId']
-              // };
               reqBody = {
                 'userId': data['userId'],
                 'connectionId': data['connectionId'],
                 'destination': data['destination'],
-                'checkOutGate': 'FACULTY GATE',
+                'checkOutGate': 'Faculty Gate',
               };
             } else {
               reqBody = {
                 'connectionId': data['connectionId'],
+                'checkInGate': 'Faculty Gate',
                 'entryId': data['entryId'],
               };
             }
             try {
-              Response res;
+              late final Response res;
               if (data['isExit']) {
                 res = await dio.post('/newEntry', data: reqBody);
               } else {
-                res = await dio.patch('/closeEntry/${reqBody['entryId']}', data: reqBody);
+                res = await dio.patch('/closeEntry/${reqBody['entryId']}',
+                    data: reqBody);
               }
 
-              ScaffoldMessenger.of(context)
-                  .showSnackBar(SnackBar(content: Text(res.data['message'].toString())));
+              ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text(res.data['message'].toString())));
 
               print(res.data);
             } catch (e) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(content: Text(e.toString()), duration: const Duration(seconds: 20)));
+              ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                  content: Text(e.toString()),
+                  duration: const Duration(seconds: 20)));
             }
           });
         },
@@ -124,7 +134,7 @@ class _QRViewExampleState extends State<QRViewExample> {
           log('${DateTime.now().toIso8601String()}_onPermissionSet $p');
           if (!p) {
             ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('no Permission')),
+              const SnackBar(content: Text('No Permission')),
             );
           }
         },
