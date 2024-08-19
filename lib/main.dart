@@ -69,6 +69,12 @@ class _QRViewExampleState extends State<QRViewExample> {
 
   @override
   Widget build(BuildContext context) {
+    const prodKey = String.fromEnvironment('PROD_SECURITY_KEY');
+    const devKey = String.fromEnvironment('DEV_SECURITY_KEY');
+
+    print(prodKey);
+    print(devKey);
+
     if (json != null) {
       Navigator.of(context).pop({'data': json});
     }
@@ -86,8 +92,7 @@ class _QRViewExampleState extends State<QRViewExample> {
                 baseUrl:
                     'https://swc.iitg.ac.in${widget.isProd ? '' : '/test'}/khokhaEntry/api/v1',
                 headers: {
-                  'khokha-security-key': String.fromEnvironment(
-                      widget.isProd ? 'PROD_SECURITY_KEY' : 'DEV_SECURITY_KEY')
+                  'khokha-security-key': widget.isProd ? prodKey : devKey
                 }));
             Map reqBody = {};
             if (data['isExit']) {
